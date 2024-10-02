@@ -1,7 +1,17 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { LoginPage } from './components/LoginPage'; 
+import { RegistrationPage } from './components/RegistrationPage';
+import { ForgotPassword } from './components/ForgotPassword';
 
-const App = () => {
-  return <h1>Hello, React!</h1>;
-};
-
-export default App;
+export default function App() {
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={<LoginPage />} />
+                <Route path="/register" element={<RegistrationPage />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+            </Routes>
+        </Router>
+    );
+}
