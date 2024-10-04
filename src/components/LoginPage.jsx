@@ -1,23 +1,34 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { setToken, getToken } from '../services/authToken';
 
 export const LoginPage = () => {
     
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [loginData, setLoginData] = useState({
+        email: '',
+        password: '',
+    });
+    
     const navigate = useNavigate(); 
 
-    const handleEmailChange = (e) => {
-        setEmail(e.target.value);
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setLoginData({
+            ...loginData,
+            [name]: value,
+        });
     };
 
-    const handlePasswordChange = (e) => {
-        setPassword(e.target.value);
-    };
-
-    const handleLogin = () => {
-        console.log('Login button pressed');
+    const handleLogin = async () => {
+        try {
+            const response = await axios.post('http://localhost:3000/auth/login', loginData);
+            setToken(response.data.token);
+            navigate('/main');
+        } catch (error) {
+            console.error('Error during login:', error.response ? error.response.data : error.message);
+        }
     };
 
     const handleRegistration = () => {
@@ -51,8 +62,8 @@ export const LoginPage = () => {
                         name="email"
                         autoComplete="email"
                         autoFocus
-                        value={email}
-                        onChange={handleEmailChange}
+                        value={loginData.email}
+                        onChange={handleChange}
                     />
                     <TextField
                         margin="normal"
@@ -63,8 +74,8 @@ export const LoginPage = () => {
                         type="password"
                         id="password"
                         autoComplete="current-password"
-                        value={password}
-                        onChange={handlePasswordChange}
+                        value={loginData.password}
+                        onChange={handleChange}
                     />
                     <Button
                         type="button"
