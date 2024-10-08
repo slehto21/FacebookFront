@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, TextField, Button } from '@mui/material';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { format } from 'date-fns';
 
 export const RegistrationPage = () => {
-
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         firstName: '',
@@ -11,7 +14,15 @@ export const RegistrationPage = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        age: '',
+        birthdate: null,
+    });
+    const [errors, setErrors] = useState({
+        firstName: false,
+        lastName: false,
+        email: false,
+        password: false,
+        confirmPassword: false,
+        birthdate: false,
     });
 
     const handleChange = (e) => {
@@ -20,10 +31,122 @@ export const RegistrationPage = () => {
             ...formData,
             [name]: value,
         });
+        validateField(name, value);
     };
 
-    const handleRegister = (e) => {
-        console.log(formData);
+    const handleDateChange = (value) => {
+        const formattedDate = format(value, 'yyyy-MM-dd');
+        setFormData({
+            ...formData,
+            birthdate: formattedDate,
+        });
+        validateField('birthdate', value);
+    };
+
+    const validateField = (field, value) => {
+        switch (field) {
+            case "firstName":
+                if (value === '' || value.length < 2 || value.length > 50) {
+                    setErrors({
+                        ...errors,
+                        [field]: true, // Error in this field
+                    });
+                    return false;
+                } else {
+                    setErrors({
+                        ...errors,
+                        [field]: false, // No errors
+                    });
+                }
+                break;
+            case "lastName":
+                if (value === '' || value.length < 2 || value.length > 50) {
+                    setErrors({
+                        ...errors,
+                        [field]: true,
+                    });
+                    return false;
+                } else {
+                    setErrors({
+                        ...errors,
+                        [field]: false,
+                    });
+                }
+                break;
+            case "email":
+                if (value === '' || value.length < 5 || value.length > 50 || !value.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) {
+                    setErrors({
+                        ...errors,
+                        [field]: true,
+                    });
+                    return false;
+                } else {
+                    setErrors({
+                        ...errors,
+                        [field]: false,
+                    });
+                }
+                break;
+            case "password":
+                if (value === '' || value.length < 8 || value.length > 100) {
+                    setErrors({
+                        ...errors,
+                        [field]: true,
+                    });
+                    return false;
+                } else {
+                    setErrors({
+                        ...errors,
+                        [field]: false,
+                    });
+                }
+                break;
+            case "confirmPassword":
+                if (value === '' || value !== formData.password) {
+                    setErrors({
+                        ...errors,
+                        [field]: true,
+                    });
+                    return false;
+                } else {
+                    setErrors({
+                        ...errors,
+                        [field]: false,
+                    });
+                }
+                break;
+            case "birthdate":
+                if (!value || new Date().getFullYear() - new Date(value).getFullYear() < 13) {
+                    setErrors({
+                        ...errors,
+                        [field]: true,
+                    });
+                    return false;
+                } else {
+                    setErrors({
+                        ...errors,
+                        [field]: false,
+                    });
+                }
+                break;
+            default:
+                break;
+        }
+        return true;
+    };
+
+    const handleRegister = async () => {
+        try {
+            if (Object.values(errors).some((error) => error)) {
+                throw new Error('Invalid fields');
+            }
+            const { confirmPassword, ...dataToSend } = formData;
+            const response = await axios.post('http://localhost:3000/auth/register', dataToSend);
+            navigate('/', { state: { message: 'Account created succesfully, please log in.' } });
+            console.log('Registration successful:', response.data);
+        } catch (error) {
+            console.error('Error during registration:', error.response ? error.response.data : error.message);
+        }
     };
 
     const handleLogin = () => {
@@ -43,7 +166,7 @@ export const RegistrationPage = () => {
                 <Typography component="h1" variant="h5">
                     Register
                 </Typography>
-                <Box component="form" noValidate sx={{ mt: 1 }}>
+                <Box component="form" noValidate sx={{ mt: 1 }} onSubmit={(e) => e.preventDefault()}>
                     <TextField
                         margin="normal"
                         required
@@ -53,6 +176,8 @@ export const RegistrationPage = () => {
                         name="firstName"
                         value={formData.firstName}
                         onChange={handleChange}
+                        error={errors.firstName}
+                        helperText={errors.firstName ? "First name must be between 2 and 50 characters" : ""}
                     />
                     <TextField
                         margin="normal"
@@ -63,6 +188,8 @@ export const RegistrationPage = () => {
                         name="lastName"
                         value={formData.lastName}
                         onChange={handleChange}
+                        error={errors.lastName}
+                        helperText={errors.lastName ? "Last name must be between 2 and 50 characters" : ""}
                     />
                     <TextField
                         margin="normal"
@@ -73,6 +200,8 @@ export const RegistrationPage = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
+                        error={errors.email}
+                        helperText={errors.email ? "Email must be valid" : ""}
                     />
                     <TextField
                         margin="normal"
@@ -84,6 +213,8 @@ export const RegistrationPage = () => {
                         id="password"
                         value={formData.password}
                         onChange={handleChange}
+                        error={errors.password}
+                        helperText={errors.password ? "Passwords must be at least 8 characters long" : ""}
                     />
                     <TextField
                         margin="normal"
@@ -95,18 +226,25 @@ export const RegistrationPage = () => {
                         id="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
+                        error={errors.confirmPassword}
+                        helperText={errors.confirmPassword ? "Passwords do not match" : ""}
                     />
-                    <TextField
-                        margin="normal"
-                        required
-                        fullWidth
-                        name="age"
-                        label="Age"
-                        type="number"
-                        id="age"
-                        value={formData.age}
-                        onChange={handleChange}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <DatePicker
+                            label="Birthdate"
+                            value={formData.birthdate}
+                            onChange={handleDateChange}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    fullWidth
+                                    required
+                                    error={errors.birthdate}
+                                    helperText={errors.birthdate ? "User must be at least 13 years old" : ""}
+                                />
+                            )}
+                        />
+                    </LocalizationProvider>
                     <Button
                         type="button"
                         fullWidth

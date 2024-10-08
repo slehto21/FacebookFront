@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import { setToken, getToken } from '../services/authToken';
 
@@ -10,7 +10,7 @@ export const LoginPage = () => {
         email: '',
         password: '',
     });
-    
+    const location = useLocation();
     const navigate = useNavigate(); 
 
     const handleChange = (e) => {
@@ -52,6 +52,11 @@ export const LoginPage = () => {
                 <Typography component="h1" variant="h5">
                     Facebook
                 </Typography>
+                {location.state?.message && (
+                    <Typography component="p" color="success.main">
+                        {location.state.message}
+                    </Typography>
+                )}
                 <Box component="form" noValidate sx={{ mt: 1 }}>
                     <TextField
                         margin="normal"
