@@ -25,6 +25,11 @@ export const LoginPage = () => {
         try {
             const response = await axios.post('http://localhost:3000/auth/login', loginData);
             setToken(response.data.token);
+            // if user just signed up, navigate to welcome page
+            if (location.state?.fromRegistration) {
+                navigate('/welcome');
+                return;
+            }
             navigate('/main');
         } catch (error) {
             console.error('Error during login:', error.response ? error.response.data : error.message);

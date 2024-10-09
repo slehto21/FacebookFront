@@ -152,7 +152,7 @@ export const RegistrationPage = () => {
             }
             const { confirmPassword, ...dataToSend } = formData;
             const response = await axios.post('http://localhost:3000/auth/register', dataToSend);
-            navigate('/', { state: { message: 'Account created succesfully, please log in.' } });
+            navigate('/', { state: { message: 'Account created succesfully, please log in.', fromRegistration: true } });
             console.log('Registration successful:', response.data);
         } catch (error) {
             console.error('Error during registration:', error.response ? error.response.data : error.message);

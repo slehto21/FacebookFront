@@ -12,6 +12,14 @@ export const MainPage = () => {
         navigate('/');
     }
 
+    const handleProfile = () => {
+        navigate('/profile');
+    };
+
+    const handleWelcome = () => {
+        navigate('/welcome');
+    };
+
     return (
         <Container component="main" maxWidth="xs">
             <Typography component="h1" variant="h5">
@@ -25,6 +33,24 @@ export const MainPage = () => {
                 onClick={handleSignOut}
             >
                 Sign Out
+            </Button>
+            <Button
+                type="button"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={handleProfile}
+            >
+                Profile
+            </Button>
+            <Button
+                type="button"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={handleWelcome}
+            >
+                Welcome
             </Button>
         </Container>
     );
