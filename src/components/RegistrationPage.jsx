@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Container, Typography, Box, TextField, Button } from '@mui/material';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { format } from 'date-fns';
+import { differenceInYears, format, isValid } from 'date-fns';
+import { enGB, is } from 'date-fns/locale';
 
 export const RegistrationPage = () => {
     const navigate = useNavigate();
@@ -35,12 +36,18 @@ export const RegistrationPage = () => {
     };
 
     const handleDateChange = (value) => {
-        const formattedDate = format(value, 'yyyy-MM-dd');
-        setFormData({
-            ...formData,
-            birthdate: formattedDate,
-        });
-        validateField('birthdate', value);
+        try {
+            const formattedDate = format(value, 'yyyy-MM-dd');
+            const isValidDate = validateField('birthdate', formattedDate);
+            if (isValidDate) {
+                setFormData({
+                    ...formData,
+                    birthdate: formattedDate,
+                });
+            }
+        } catch (error) {
+            validateField('birthdate', null);
+        }
     };
 
     const validateField = (field, value) => {
@@ -116,7 +123,10 @@ export const RegistrationPage = () => {
                 }
                 break;
             case "birthdate":
-                if (!value || new Date().getFullYear() - new Date(value).getFullYear() < 13) {
+                const currentDate = new Date();
+                const givenDate = new Date(value);
+                const difference = differenceInYears(currentDate, givenDate);
+                if (!value || !value.match(/^\d{4}-\d{2}-\d{2}$/) || !givenDate || difference < 13 || difference > 150) {
                     setErrors({
                         ...errors,
                         [field]: true,
@@ -229,18 +239,19 @@ export const RegistrationPage = () => {
                         error={errors.confirmPassword}
                         helperText={errors.confirmPassword ? "Passwords do not match" : ""}
                     />
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <LocalizationProvider dateAdapter={AdapterDateFns} locale={enGB}>
                         <DatePicker
                             label="Birthdate"
                             value={formData.birthdate}
-                            onChange={handleDateChange}
+                            inputFormat="dd/MM/yyyy"
+                            onChange={(newValue) => handleDateChange(newValue)}
                             renderInput={(params) => (
                                 <TextField
                                     {...params}
                                     fullWidth
                                     required
                                     error={errors.birthdate}
-                                    helperText={errors.birthdate ? "User must be at least 13 years old" : ""}
+                                    helperText={errors.birthdate ? "Format must be DD/MM/YYYY, age must be between 13-150" : ""}
                                 />
                             )}
                         />
